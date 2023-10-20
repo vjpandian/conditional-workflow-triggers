@@ -1,0 +1,74 @@
+version: 2.1
+
+executors:
+  cimg-docker:
+    docker:
+      - image: cimg/base:stable
+      
+commands: 
+   hello:
+     steps:
+       - run: echo "hello"
+jobs:
+  bootstrap:
+    executor: cimg-docker
+    steps:
+      - hello
+      
+  static_analysis:
+    executor: cimg-docker
+    steps:
+      - hello
+      
+  verify_schema:
+    executor: cimg-docker
+    steps:
+      - hello
+  
+  test:
+    executor: cimg-docker
+    steps:
+      - hello
+      
+  stage_schema:
+    executor: cimg-docker
+    steps:
+      - hello 
+      
+  deploy:
+    executor: cimg-docker
+    steps:
+      - hello
+
+  verify_schema_state:
+    executor: cimg-docker
+    steps:
+      - hello
+      
+  approval_job:
+    executor: cimg-docker
+    steps:
+      - hello
+      
+  build_deploy:
+    executor: cimg-docker
+    steps:
+      - hello
+
+workflows:
+  build:
+    jobs:
+      - bootstrap
+      - static_analysis:
+           requires:
+             - bootstrap
+      - verify_schema:
+           requires:
+             - bootstrap
+      - test:
+           requires:
+             - bootstrap
+      - stage_schema:
+           requires:
+             - bootstrap
+             
