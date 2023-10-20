@@ -86,6 +86,7 @@ workflows:
            requires:
              - bootstrap
       - verify_schema:
+           context: org-global
            requires:
              - bootstrap
       - test:
