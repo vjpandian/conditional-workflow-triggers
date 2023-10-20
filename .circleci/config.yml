@@ -1,5 +1,10 @@
 version: 2.1
 
+parameters:
+  is-approval-workflow:
+    type: boolean
+    default: false
+
 executors:
   cimg-docker:
     docker:
@@ -24,6 +29,20 @@ jobs:
     executor: cimg-docker
     steps:
       - hello
+      - run:
+          name: check if file exists and trigger workflow
+          command: | 
+              echo "schema changes can be checked in this step" > test.txt
+              if [ -e test.txt ]; then
+                  echo "File exists...will trigger a new workflow"
+                  curl -X POST https://circleci.com/api/v2/project/github/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/pipeline \
+                  --header "Circle-Token: $CIRCLE_TOKEN" \
+                  --header "content-type: application/json" \
+                  --data '{"branch":"main","parameters":{"is-approval-workflow":true}}'
+              else
+                  echo "File does not exist."
+              fi
+
   
   test:
     executor: cimg-docker
@@ -57,6 +76,10 @@ jobs:
 
 workflows:
   build:
+    when:
+      and:
+        - equal: [main, << pipeline.git.branch >>]
+        - equal: [false, << pipeline.parameters.is-approval-workflow >>]
     jobs:
       - bootstrap
       - static_analysis:
@@ -76,5 +99,19 @@ workflows:
             - static_analysis
             - verify_schema
             - test
-            - stage_schema
+
+  approval-build-deploy:
+    when:
+      and:
+        - equal: [main, << pipeline.git.branch >>]
+        - equal: [true, << pipeline.parameters.is-approval-workflow >>]
+    jobs:
+      - verify_schema_state
+      - approval_job:
+          type: approval
+          requires:
+            - verify_schema_state
+      - build_deploy:
+          requires:
+             - approval_job
              
