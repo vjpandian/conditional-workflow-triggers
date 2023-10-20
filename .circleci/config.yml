@@ -71,4 +71,10 @@ workflows:
       - stage_schema:
            requires:
              - bootstrap
+      - deploy:
+          requires:
+            - static_analysis
+            - verify_schema
+            - test
+            - stage_schema
              
