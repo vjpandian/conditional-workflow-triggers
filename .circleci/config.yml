@@ -101,7 +101,7 @@ workflows:
             - verify_schema
             - test
 
-  approval-build-deploy:
+  approval-deploy:
     when:
       and:
         - equal: [main, << pipeline.git.branch >>]
